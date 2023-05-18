@@ -90,13 +90,16 @@ const send2faToken = async (user) => {
     });
     await db_1.default.twoFactorAuth.upsert({
         where: {
-            user_id: user.id,
+            user_id: user?.id,
         },
         create: {
             token: generated,
             user_id: user.id,
         },
-        update: {},
+        update: {
+            token: generated,
+            user_id: user.id,
+        },
     });
     // });
 };
