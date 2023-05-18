@@ -44,6 +44,7 @@ const uploadImage = async (image) => {
 // Configure Multer storage
 const storage = multer_1.default.diskStorage({
     destination: (req, file, cb) => {
+        fs_1.default.mkdirSync("../uploads", { recursive: true });
         cb(null, "uploads"); // Upload directory path
     },
     filename: (req, file, cb) => {
