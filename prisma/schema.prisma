@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model EmailVerifications {
+  id    Int    @id @default(autoincrement())
+  email String @unique
+  code  Int
+}
+
+model TwoFactorAuth {
+  id      Int    @id @default(autoincrement())
+  user_id Int    @unique
+  token   String
+}
+
+model PasswordResets {
+  id    Int    @id @default(autoincrement())
+  email String @unique
+  token String
+}
+
+model Verification {
+  id          Int    @id @default(autoincrement())
+  user_id     Int    @unique
+  national_id String
+  file        String
+  status      String
+  User        User?
+}
+
+model User {
+  id             Int           @id @default(autoincrement())
+  email          String        @unique
+  password       String?
+  names          String?
+  nationality    String?
+  birth          String?
+  photo          String?
+  martal_status  String?
+  provider       String?
+  gender         String?
+  verified       String?
+  verification   Verification? @relation(fields: [verificationId], references: [id])
+  createdAt      DateTime      @default(now())
+  verificationId Int?          @unique
+}
