@@ -11,6 +11,8 @@ const app = express();
 
 const cloudinary = require("cloudinary").v2;
 
+fs.mkdirSync("./uploads", { recursive: true });
+
 // Configuration
 cloudinary.config({
   cloud_name: "dhugavkh6",
@@ -43,8 +45,7 @@ const uploadImage = async (image) => {
 
 // Configure Multer storage
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    fs.mkdirSync("../uploads", { recursive: true });
+  destination: async (req, file, cb) => {
     cb(null, "uploads"); // Upload directory path
   },
   filename: (req, file, cb) => {
