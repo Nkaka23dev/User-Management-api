@@ -11,6 +11,8 @@ import {
   changePassword,
   requestVerification,
   verify2fa,
+  sendLoginLink,
+  verifyLoginLink,
 } from "../controllers/users";
 import { Authentication } from "../middlewares/authentication";
 import Validator from "../middlewares/Validator";
@@ -28,4 +30,6 @@ router.post("/update", Authentication, Validator("user"), update);
 router.post("/google", googleSignin);
 router.post("/verify", Authentication, requestVerification);
 router.post("/verify2fa", verify2fa);
+router.post("/send-login-link", sendLoginLink);
+router.post("/verify-login-link", verifyLoginLink);
 export default router;

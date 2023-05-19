@@ -43,7 +43,6 @@ function findUserByEmail(email) {
 }
 
 const formatProfile = (user: any) => {
-  // console.log(user);
   return {
     id: user._id || user.id || "",
     email: user.email,
@@ -51,6 +50,7 @@ const formatProfile = (user: any) => {
     photo: user?.photo || "",
     nationality: user.nationality || "",
     birth: user.birth || "",
+    martal_status: user.martal_status || "",
     gender: user.gender || "",
     verification_status: user?.verification?.status || "unverified",
   };
@@ -531,6 +531,117 @@ export const verify2fa = async (
     });
 
     await db.twoFactorAuth.delete({
+      where: {
+        id: session.id,
+      },
+    });
+
+    sendBack(res, user, true);
+  } catch (error) {
+    console.log(error);
+    return next(error.message);
+  }
+};
+
+export const sendLoginLink = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { email } = req.body;
+  try {
+    crypto.randomBytes(32, async (err, buffer) => {
+      if (err) {
+        console.log(err);
+      }
+      const token = buffer.toString("hex");
+
+      const user = await db.user.findUnique({
+        where: {
+          email: email,
+        },
+      });
+
+      if (!user) return next("User does not exist in our database");
+
+      const link = `${process.env.CLIENT_HOST}/?token=${token}`;
+      console.log(link);
+
+      await sendEmail({
+        html: `hello, here is your login link: <a href="${link}">${link}</a>`,
+        subject: "Login to your account",
+        to: user.email,
+        names: user.names,
+      });
+
+      const doc = await db.magicLink.findUnique({
+        where: {
+          email: email,
+        },
+      });
+
+      if (doc?.email) {
+        await db.magicLink.update({
+          where: {
+            email,
+          },
+          data: {
+            email: user.email,
+            token: token,
+          },
+        });
+        return res.json({ message: "check your inbox" });
+      } else {
+        await db.magicLink.create({
+          data: {
+            email: user.email,
+            token: token,
+          },
+        });
+        return res.json({ message: "check your inbox" });
+      }
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      // The .code property can be accessed in a type-safe manner
+      if (error.code === "P2002") {
+        return next(
+          "There is a unique constraint violation, a new user cannot be created with this email"
+        );
+      }
+    }
+    return next(error.message);
+  }
+};
+
+export const verifyLoginLink = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const token = req.body.token;
+
+  if (!token) return next("session token is not available");
+
+  try {
+    const session = await db.magicLink.findFirst({
+      where: {
+        token: token,
+      },
+    });
+
+    if (!session) return next("session token is invalid");
+
+    const user = await db.user.findUnique({
+      where: {
+        email: session.email,
+      },
+      include: {
+        verification: true,
+      },
+    });
+
+    await db.magicLink.delete({
       where: {
         id: session.id,
       },

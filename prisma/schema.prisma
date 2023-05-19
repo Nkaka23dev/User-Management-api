@@ -28,6 +28,12 @@ model PasswordResets {
   token String
 }
 
+model MagicLink {
+  id    Int    @id @default(autoincrement())
+  email String @unique
+  token String
+}
+
 model Verification {
   id          Int    @id @default(autoincrement())
   user_id     Int    @unique
