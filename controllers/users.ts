@@ -457,18 +457,18 @@ export const requestVerification = async (
 
     const user: any = req.user;
 
-    // const data = {
-    //   file,
-    //   national_id,
-    //   status: "pending",
-    //   user_id: user.id,
-    // };
+    const data = {
+      file,
+      national_id,
+      status: "pending",
+      user_id: user.id,
+    };
 
-    // const exists = await db.verification.findUnique({
-    //   where: {
-    //     user_id: user.id,
-    //   },
-    // });
+    const exists = await db.verification.findUnique({
+      where: {
+        user_id: user.id,
+      },
+    });
 
     const verification = await db.user.update({
       data: {
@@ -500,6 +500,7 @@ export const requestVerification = async (
     next(error.message);
   }
 };
+// requestVerification ends here
 
 export const verify2fa = async (
   req: Request,
