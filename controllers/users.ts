@@ -93,12 +93,18 @@ const send2faToken = async (user) => {
 
   const generated = generateOTP(6);
 
-  await sendEmail({
-    html: `hello, here is your 2fa code: ${generated}`,
-    subject: "Here is your login link.",
-    to: user.email,
-    names: user.names,
-  });
+await sendEmail({
+  html: `
+    <div style="background-color: #f4f4f4; padding: 20px;">
+      <h2 style="color: #333;">Hello, ${user.names}!</h2>
+      <p style="color: #333;">Here is your login link.</p>
+      <p style="color: #333;">Here is your 2FA code: <strong>${generated}</strong></p>
+    </div>
+  `,
+  subject: "Here is your login link.",
+  to: user.email,
+  names: user.names,
+});
 
   await db.twoFactorAuth.upsert({
     where: {
@@ -288,12 +294,26 @@ export const forgotPassword = async (
       console.log(link);
 
       await sendEmail({
-        html: `hello, here is your password reset link: <a href="${link}">${link}</a>`,
+        html: `
+          <div style="font-family: Arial, sans-serif; background-color: #f7f7f7; padding: 20px;">
+            <h1 style="color: #333333; text-align: center;">Password Reset</h1>
+            <p style="color: #555555;">Hello ${user.names},</p>
+            <p style="color: #555555;">Here is your password reset link:</p>
+            <p style="text-align: center;">
+              <a href="${link}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 4px;">
+                ${link}
+              </a>
+            </p>
+            <p style="color: #555555;">If you did not request a password reset, please ignore this email.</p>
+            <p style="color: #555555;">Best regards,</p>
+            <p style="color: #555555;">Your Company Name</p>
+          </div>
+        `,
         subject: "Reset your password",
         to: user.email,
         names: user.names,
       });
-
+      
       const doc = await db.passwordResets.findUnique({
         where: {
           email: email,
@@ -569,11 +589,22 @@ export const sendLoginLink = async (
       console.log(link);
 
       await sendEmail({
-        html: `hello, here is your login link: <a href="${link}">${link}</a>`,
+        html: `
+          <div style="background-color: #f9f9f9; padding: 20px;">
+            <h2 style="color: #333;">Hello ${user.names},</h2>
+            <p style="font-size: 16px; line-height: 1.5;">
+              Thank you for choosing our service. Here is your login link:
+            </p>
+            <a href="${link}" style="display: inline-block; margin-top: 10px; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold;">
+              ${link}
+            </a>
+          </div>
+        `,
         subject: "Login to your account",
         to: user.email,
         names: user.names,
       });
+      
 
       const doc = await db.magicLink.findUnique({
         where: {
